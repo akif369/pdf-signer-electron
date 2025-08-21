@@ -1,3 +1,7 @@
+.app{
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 .status-bar {
   display: flex;
   align-items: center;
@@ -42,4 +46,96 @@
     opacity: 0.5;
     transform: scale(1.1);
   }
+}
+
+
+
+/* pdfviewererrererer */
+
+
+/* General reset & base */
+
+/* App container */
+
+
+/* PDF Viewer container */
+.pdf-viewer {
+  width: 100%;
+  max-width: 900px;
+  background: #fff;
+  padding: 20px 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease;
+}
+
+.pdf-viewer:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* File input */
+.pdf-viewer input[type="file"] {
+  display: inline-block;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  transition: all 0.2s ease;
+}
+
+.pdf-viewer input[type="file"]:hover {
+  background-color: #f0f0f0;
+  border-color: #999;
+}
+
+/* Error message */
+.pdf-viewer .error {
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ffb3b3;
+  border-radius: 8px;
+  background-color: #ffeaea;
+  color: #b00020;
+  font-size: 14px;
+}
+
+/* Loading state */
+.pdf-viewer .loading {
+  padding: 16px;
+  text-align: center;
+  color: #555;
+  font-size: 15px;
+}
+
+/* PDF preview container */
+.pdf-preview {
+  margin-top: 20px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 10px;
+  background: #fafafa;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* Page styling */
+.react-pdf__Page {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.react-pdf__Page canvas {
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Total pages text */
+.pdf-viewer .page-count {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 13px;
+  color: #666;
 }

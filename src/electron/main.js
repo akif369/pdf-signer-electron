@@ -11,6 +11,10 @@ function createWindow() {
     height: 600,
     webPreferences: {
       preload: path.join(app.getAppPath(), "src/electron/preload.js"), // preload bridge
+      nodeIntegration:true,
+      contextIsolation:true,
+      webSecurity:false,
+      allowRunningInsecureContent:true,
     },
   });
 
