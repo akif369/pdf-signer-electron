@@ -1,18 +1,19 @@
-import { useState, useEffect } from "react";
+// import { useState, useEffect } from "react";
 import StatusBar from "./components/StatusBar";
 import PdfViewer from "./components/PdfViewer";
 
 function App() {
-  const [isOnline, setIsOnline] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // const [_isOnline, setIsOnline] = useState(false);
 
-  useEffect(() => {
-    window.adbAPI.checkDevice().then(setIsOnline);
-    window.adbAPI.onStatusChange((status) => setIsOnline(status));
-  }, []);
+  // useEffect(() => {
+  //   window.adbAPI.checkDevice().then(setIsOnline);
+  //   window.adbAPI.onStatusChange((status) => setIsOnline(status));
+  // }, []);
 
   return (
     <div className="app">
-      <StatusBar isOnline={isOnline} />
+      <StatusBar  />
       <PdfViewer />
     </div>
   );

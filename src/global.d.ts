@@ -1,10 +1,12 @@
 export {};
 
+
 declare global {
   interface Window {
     adbAPI: {
       checkDevice: () => Promise<boolean>;
-      onStatusChange: (callback: (status: boolean) => void) => void;
+      onStatusChange: (callback: (status: { deviceOnline: boolean; chromeRunning: boolean }) => void) => void;
+      onChromeChange: (callback: (running: boolean) => void) => void;
     };
   }
 }

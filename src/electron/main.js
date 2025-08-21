@@ -1,8 +1,13 @@
+// main.js
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
-import { checkAdbDevice } from "./adb/adbUtils.js"; // Import helper
+import { exec } from "child_process";
+import { checkAdbDevice } from "./adb/adbUtils.js";
+import { startServer } from "./server/server.js";
 
 let mainWindow;
+let deviceWasConnected = false;
+let chromeRunning = false;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -12,25 +17,42 @@ function createWindow() {
       preload: path.join(app.getAppPath(), "src/electron/preload.js"),
       nodeIntegration: true,
       contextIsolation: true,
-      webSecurity: false,
-      allowRunningInsecureContent: true,
     },
   });
 
   mainWindow.loadFile(path.join(app.getAppPath(), "dist-react/index.html"));
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
 
-// IPC event for checking device status
-ipcMain.handle("check-device-status", async () => {
-  return await checkAdbDevice();
+  // Start Socket.io server + tracking
+  startServer((isRunning) => {
+    chromeRunning = isRunning;
+    if (mainWindow) {
+      mainWindow.webContents.send("chrome-status", chromeRunning);
+    }
+  });
 });
 
-// Poll device status every 2s and push updates
+// Poll every 2s for device
 setInterval(async () => {
-  const status = await checkAdbDevice();
+  const deviceOnline = await checkAdbDevice();
+
   if (mainWindow) {
-    mainWindow.webContents.send("device-status", status);
+    mainWindow.webContents.send("device-status", {
+      deviceOnline,
+      chromeRunning,
+    });
   }
+
+  if (deviceOnline && !deviceWasConnected) {
+    console.log("Device detected! Forwarding port + opening Chrome...");
+    exec("adb reverse tcp:3000 tcp:3000");
+    exec(
+      `adb shell am start -a android.intent.action.VIEW -d "http://localhost:3000" com.android.chrome`
+    );
+  }
+
+  deviceWasConnected = deviceOnline;
 }, 2000);

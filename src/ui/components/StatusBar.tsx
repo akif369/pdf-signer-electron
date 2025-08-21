@@ -1,19 +1,41 @@
-type StatusBarProps = {
-  isOnline: boolean;
+// StatusBar.tsx
+import { useEffect, useState } from "react";
+
+type DeviceStatus = {
+  deviceOnline: boolean;
+  chromeRunning: boolean;
 };
 
-function StatusBar({ isOnline }: StatusBarProps) {
+function StatusBar() {
+  const [status, setStatus] = useState<DeviceStatus>({
+    deviceOnline: false,
+    chromeRunning: false,
+  });
+
+ useEffect(() => {
+  window.adbAPI.onStatusChange((data: DeviceStatus) => {
+    setStatus(data);
+  });
+
+  window.adbAPI.onChromeChange((running: boolean) => {
+    setStatus((prev) => ({ ...prev, chromeRunning: running }));
+  });
+}, []);
+
+  let text = "Offline";
+  let statusClass = "offline";
+
+  if (status.deviceOnline && status.chromeRunning) {
+    text = "Online + Running";
+    statusClass = "running";
+  } else if (status.deviceOnline) {
+    text = "Online";
+    statusClass = "online";
+  }
+
   return (
-    <div className={`status-bar ${isOnline ? "online" : "offline"}`}>
-      {isOnline ? (
-        <>
-          <span className="pulse"></span> Online
-        </>
-      ) : (
-        <>
-          <span className="mr-2"></span> Offline
-        </>
-      )}
+    <div className={`status-bar ${statusClass}`}>
+      <span className="pulse"></span> {text}
     </div>
   );
 }
