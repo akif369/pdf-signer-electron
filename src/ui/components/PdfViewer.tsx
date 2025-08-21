@@ -51,6 +51,7 @@ function PdfViewer() {
     setError(null);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onDocumentLoadError = (error: any) => {
     console.error("PDF load error:", error);
     setError(`Failed to load PDF: ${error.message || "Unknown error"}`);
