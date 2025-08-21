@@ -11,6 +11,7 @@ type DeviceStatus = {
   deviceOnline: boolean;
   chromeRunning: boolean;
 };
+
 function PdfViewer() {
   const [fileData, setFileData] = useState<string | ArrayBuffer | null>(null);
   const [numPages, setNumPages] = useState<number | null>(null);
@@ -21,17 +22,15 @@ function PdfViewer() {
     chromeRunning: false,
   });
 
-
   useEffect(() => {
-      window.adbAPI.onStatusChange((data: DeviceStatus) => {
-        setStatus(data);
-      });
-  
-      window.adbAPI.onChromeChange((running: boolean) => {
-        setStatus((prev) => ({ ...prev, chromeRunning: running }));
-      });
-    }, []);
+    window.adbAPI.onStatusChange((data: DeviceStatus) => {
+      setStatus(data);
+    });
 
+    window.adbAPI.onChromeChange((running: boolean) => {
+      setStatus((prev) => ({ ...prev, chromeRunning: running }));
+    });
+  }, []);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -57,8 +56,8 @@ function PdfViewer() {
         headers: { "Content-Type": "application/pdf" },
         body: arrayBuffer,
       });
-      console.log(response)
-      handleClick()
+      console.log(response);
+      handleClick();
     } catch (err) {
       console.error("Error reading file:", err);
       setError("Failed to read PDF file");
@@ -66,13 +65,28 @@ function PdfViewer() {
       setLoading(false);
     }
   };
-   const handleClick = () => {
+
+  const handleClick = () => {
     if (status.deviceOnline && !status.chromeRunning) {
       // 👉 Replace with your actual served file URL
       window.adbAPI.launchChrome();
     }
   };
 
+  // Cancel button → clear everything
+const handleCancel = async () => {
+  setFileData(null);
+  setNumPages(null);
+  setError(null);
+  setLoading(false);
+
+  try {
+    await fetch("http://localhost:3000/clear-pdf", { method: "DELETE" });
+    console.log("🗑️ Cleared PDF from server");
+  } catch (err) {
+    console.error("Failed to clear PDF from server:", err);
+  }
+};
 
   useEffect(() => {
     return () => {
@@ -96,8 +110,23 @@ function PdfViewer() {
 
   return (
     <div className="pdf-viewer" style={{ padding: "20px" }}>
-      <div style={{ marginBottom: "20px" }}>
+      <div style={{ marginBottom: "20px", display: "flex", gap: "10px" }}>
         <input type="file" accept="application/pdf" onChange={handleFileChange} />
+        {fileData && (
+          <button
+            onClick={handleCancel}
+            style={{
+              padding: "6px 12px",
+              background: "#dc3545",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+            }}
+          >
+            Cancel
+          </button>
+        )}
       </div>
 
       {loading && <div>Loading PDF...</div>}

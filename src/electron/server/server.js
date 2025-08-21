@@ -19,7 +19,7 @@ export function startServer(onClientChange) {
 
   // serve static files (index.html, css, etc.)
   app.use(express.static(path.join(__dirname, "public")));
-    
+
   // Upload new PDF
   app.post(
     "/upload-pdf",
@@ -42,6 +42,17 @@ export function startServer(onClientChange) {
     }
     res.contentType("application/pdf");
     res.send(currentPdfBuffer);
+  });
+
+  // ❌ Clear current PDF
+  app.delete("/clear-pdf", (req, res) => {
+    if (!currentPdfBuffer) {
+      return res.status(404).send("No PDF to clear");
+    }
+    currentPdfBuffer = null;
+    io.emit("pdf-updated"); // notify clients that PDF is gone
+    console.log("🗑️ PDF cleared from server");
+    res.send("Cleared");
   });
 
   io.on("connection", (socket) => {
