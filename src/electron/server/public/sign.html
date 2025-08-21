@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PDF Signer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js"></script>
+  <style>
+    body { margin: 0; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; }
+    #pdf-container { flex: 1; overflow: auto; }
+    canvas { display: block; margin: auto; }
+    #toolbar { padding: 10px; background: #eee; text-align: center; }
+    #signature-pad { border: 1px solid #000; background: #fff; }
+  </style>
+</head>
+<body>
+  <div id="toolbar">
+    <button id="clear">Clear Signature</button>
+    <button id="apply">Apply Signature</button>
+    <button id="done">Done & Upload</button>
+    <br>
+    <canvas id="signature-pad" width="300" height="100"></canvas>
+  </div>
+  <div id="pdf-container"></div>
+
+  <script>
+    const url = "/pdf";
+    let pdfDoc = null;
+    let pageRendering = false;
+    let canvas = null, ctx = null;
+
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+
+    async function loadPdf() {
+      pdfDoc = await pdfjsLib.getDocument(url).promise;
+      renderPage(1);
+    }
+
+    async function renderPage(num) {
+      pageRendering = true;
+      const page = await pdfDoc.getPage(num);
+
+      const viewport = page.getViewport({ scale: 1.5 });
+      canvas = document.createElement("canvas");
+      ctx = canvas.getContext("2d");
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      document.getElementById("pdf-container").appendChild(canvas);
+
+      const renderContext = { canvasContext: ctx, viewport: viewport };
+      await page.render(renderContext).promise;
+      pageRendering = false;
+    }
+
+    // Signature Pad
+    const sigCanvas = document.getElementById("signature-pad");
+    const sigCtx = sigCanvas.getContext("2d");
+    let drawing = false;
+    sigCanvas.addEventListener("mousedown", () => { drawing = true; });
+    sigCanvas.addEventListener("mouseup", () => { drawing = false; sigCtx.beginPath(); });
+    sigCanvas.addEventListener("mousemove", draw);
+
+    function draw(e) {
+      if (!drawing) return;
+      sigCtx.lineWidth = 2;
+      sigCtx.lineCap = "round";
+      sigCtx.strokeStyle = "black";
+      sigCtx.lineTo(e.offsetX, e.offsetY);
+      sigCtx.stroke();
+      sigCtx.beginPath();
+      sigCtx.moveTo(e.offsetX, e.offsetY);
+    }
+
+    document.getElementById("clear").onclick = () => sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+
+    document.getElementById("apply").onclick = async () => {
+      const signatureImage = sigCanvas.toDataURL("image/png");
+
+      const existingPdfBytes = await fetch(url).then(res => res.arrayBuffer());
+      const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+      const pngImage = await pdfDoc.embedPng(signatureImage);
+      const pages = pdfDoc.getPages();
+      const firstPage = pages[0];
+      firstPage.drawImage(pngImage, {
+        x: 100,
+        y: 100,
+        width: 150,
+        height: 50,
+      });
+      const pdfBytes = await pdfDoc.save();
+      window.signedPdfBytes = pdfBytes; // keep for upload
+      alert("Signature applied!");
+    };
+
+    document.getElementById("done").onclick = async () => {
+      if (!window.signedPdfBytes) {
+        return alert("Please apply a signature first!");
+      }
+      await fetch("/signed-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/pdf" },
+        body: window.signedPdfBytes
+      });
+      alert("Signed PDF uploaded to server ✅");
+    };
+
+    loadPdf();
+  </script>
+</body>
+</html>

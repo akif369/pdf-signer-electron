@@ -3,7 +3,6 @@ import StatusBar from "./components/StatusBar";
 import PdfViewer from "./components/PdfViewer";
 
 function App() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   // const [_isOnline, setIsOnline] = useState(false);
 
   // useEffect(() => {

@@ -3,15 +3,35 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 
-// ✅ Use local worker (important for Electron!)
+// ✅ Use local worker (important for Electron)
 import workerSrc from "pdfjs-dist/build/pdf.worker?url";
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
+type DeviceStatus = {
+  deviceOnline: boolean;
+  chromeRunning: boolean;
+};
 function PdfViewer() {
   const [fileData, setFileData] = useState<string | ArrayBuffer | null>(null);
   const [numPages, setNumPages] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<DeviceStatus>({
+    deviceOnline: false,
+    chromeRunning: false,
+  });
+
+
+  useEffect(() => {
+      window.adbAPI.onStatusChange((data: DeviceStatus) => {
+        setStatus(data);
+      });
+  
+      window.adbAPI.onChromeChange((running: boolean) => {
+        setStatus((prev) => ({ ...prev, chromeRunning: running }));
+      });
+    }, []);
+
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -30,6 +50,15 @@ function PdfViewer() {
     try {
       const arrayBuffer = await selectedFile.arrayBuffer();
       setFileData(arrayBuffer);
+
+      // 👉 Upload to server for Android preview
+      const response = await fetch("http://localhost:3000/upload-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/pdf" },
+        body: arrayBuffer,
+      });
+      console.log(response)
+      handleClick()
     } catch (err) {
       console.error("Error reading file:", err);
       setError("Failed to read PDF file");
@@ -37,6 +66,13 @@ function PdfViewer() {
       setLoading(false);
     }
   };
+   const handleClick = () => {
+    if (status.deviceOnline && !status.chromeRunning) {
+      // 👉 Replace with your actual served file URL
+      window.adbAPI.launchChrome();
+    }
+  };
+
 
   useEffect(() => {
     return () => {

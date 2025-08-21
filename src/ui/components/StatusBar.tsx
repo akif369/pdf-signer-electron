@@ -40,7 +40,20 @@ function StatusBar() {
   };
 
   return (
-    <div style={{cursor:`${(status.deviceOnline && !status.chromeRunning)?"pointer":"default"}`}} title={`${(status.deviceOnline && !status.chromeRunning)?"click here to open Chrome":"chrome is running"}`} className={`status-bar ${statusClass}`} onClick={handleClick}>
+    <div
+      style={{
+        cursor: `${
+          status.deviceOnline && !status.chromeRunning ? "pointer" : "default"
+        }`,
+      }}
+      title={`${
+        status.deviceOnline && !status.chromeRunning
+          ? "click here to open Chrome"
+          : "chrome is running"
+      }`}
+      className={`status-bar ${statusClass}`}
+      onClick={handleClick}
+    >
       <span className="pulse"></span> {text}
     </div>
   );
