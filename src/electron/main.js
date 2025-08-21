@@ -8,6 +8,7 @@ import { startServer } from "./server/server.js";
 let mainWindow;
 let deviceWasConnected = false;
 let chromeRunning = false;
+const  url = "http://localhost:3000" ;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -35,6 +36,24 @@ app.whenReady().then(() => {
   });
 });
 
+ipcMain.handle("launch-chrome", async (_) => {
+   
+  return new Promise((resolve, reject) => {
+    exec(
+      `adb shell am start -a android.intent.action.VIEW -d "${url}" com.android.chrome`,
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error("Failed to launch Chrome:", stderr);
+          reject(stderr);
+          return;
+        }
+        resolve(stdout);
+      }
+    );
+  });
+});
+
+
 // Poll every 2s for device
 setInterval(async () => {
   const deviceOnline = await checkAdbDevice();
@@ -50,7 +69,7 @@ setInterval(async () => {
     console.log("Device detected! Forwarding port + opening Chrome...");
     exec("adb reverse tcp:3000 tcp:3000");
     exec(
-      `adb shell am start -a android.intent.action.VIEW -d "http://localhost:3000" com.android.chrome`
+      `adb shell am start -a android.intent.action.VIEW -d ${url} com.android.chrome`
     );
   }
 

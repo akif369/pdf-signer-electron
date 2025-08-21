@@ -1,4 +1,3 @@
-// StatusBar.tsx
 import { useEffect, useState } from "react";
 
 type DeviceStatus = {
@@ -12,15 +11,15 @@ function StatusBar() {
     chromeRunning: false,
   });
 
- useEffect(() => {
-  window.adbAPI.onStatusChange((data: DeviceStatus) => {
-    setStatus(data);
-  });
+  useEffect(() => {
+    window.adbAPI.onStatusChange((data: DeviceStatus) => {
+      setStatus(data);
+    });
 
-  window.adbAPI.onChromeChange((running: boolean) => {
-    setStatus((prev) => ({ ...prev, chromeRunning: running }));
-  });
-}, []);
+    window.adbAPI.onChromeChange((running: boolean) => {
+      setStatus((prev) => ({ ...prev, chromeRunning: running }));
+    });
+  }, []);
 
   let text = "Offline";
   let statusClass = "offline";
@@ -33,8 +32,15 @@ function StatusBar() {
     statusClass = "online";
   }
 
+  const handleClick = () => {
+    if (status.deviceOnline && !status.chromeRunning) {
+      // 👉 Replace with your actual served file URL
+      window.adbAPI.launchChrome();
+    }
+  };
+
   return (
-    <div className={`status-bar ${statusClass}`}>
+    <div style={{cursor:`${(status.deviceOnline && !status.chromeRunning)?"pointer":"default"}`}} title={`${(status.deviceOnline && !status.chromeRunning)?"click here to open Chrome":"chrome is running"}`} className={`status-bar ${statusClass}`} onClick={handleClick}>
       <span className="pulse"></span> {text}
     </div>
   );
