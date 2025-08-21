@@ -1,0 +1,45 @@
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem; /* p-4 */
+  border-radius: 0.75rem; /* rounded-xl */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+              0 4px 6px -4px rgba(0, 0, 0, 0.1); /* shadow-lg */
+  color: white; /* text-white */
+  text-align: center; /* text-center */
+  font-weight: 600; /* font-semibold */
+  font-size: 1.25rem; /* text-xl */
+  cursor: pointer;
+  transition: all 0.5s ease-in-out; /* transition-all duration-500 ease-in-out */
+  transform: scale(1); /* default */
+}
+
+/* Online state */
+.status-bar.online {
+  background: linear-gradient(to right, #4ade80, #16a34a); /* from-green-400 to-green-600 */
+  transform: scale(1.05); /* scale-105 */
+}
+
+/* Offline state */
+.status-bar.offline {
+  background: linear-gradient(to right, #ef4444, #b91c1c); /* from-red-500 to-red-700 */
+  transform: scale(0.95); /* scale-95 */
+}
+
+/* Emoji pulse animation */
+.status-bar .pulse {
+  margin-right: 0.5rem; /* mr-2 */
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
