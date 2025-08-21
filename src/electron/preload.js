@@ -12,5 +12,5 @@ contextBridge.exposeInMainWorld("adbAPI", {
   },
 
   // 👉 New: launch Chrome with served file
-  launchChrome: (url) => ipcRenderer.invoke("launch-chrome", url),
+  launchChrome: () => ipcRenderer.invoke("launch-chrome"),
 });
